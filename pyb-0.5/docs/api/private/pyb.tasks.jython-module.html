@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>pyb.tasks.jython</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css"></link>
+</head>
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="pyb-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" align="right" width="100%">
+      <table border="0" cellpadding="0" cellspacing="0">
+      <tr><th class="navbar" align="center">
+        <p class="nomargin">
+          <a class="navbar" target="_top" href="http://pyb.sf.net/">Project&nbsp;Homepage</a>
+      </p></th></tr></table>
+    </th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <font size="-1"><b class="breadcrumbs">
+        <a href="pyb-module.html">Package&nbsp;pyb</a> ::
+        <a href="pyb.tasks-module.html">Package&nbsp;tasks</a> ::
+        Module&nbsp;jython
+      </b></font></br>
+    </td>
+    <td><table cellpadding="0" cellspacing="0">
+      <tr><td align="right"><font size="-2">[show&nbsp;private&nbsp;|&nbsp;<a href="../public/pyb.tasks.jython-module.html">hide&nbsp;private</a>]</font></td></tr>
+      <tr><td align="right"><font size="-2">[<a href="frames.html"target="_top">frames</a>&nbsp;|&nbsp;<a href="pyb.tasks.jython-module.html" target="_top">no&nbsp;frames</a>]</font></td></tr>
+    </table></td>
+</tr></table>
+
+<!-- =========== START OF MODULE DESCRIPTION =========== -->
+<h2 class="module">Module pyb.tasks.jython</h2>
+
+<p>Tasks related to Jython.</p>
+<p>Copyright (C) 2004 Aetrion LLC</p>
+<p>This program is free software; you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by the 
+Free Software Foundation; either version 2 of the License, or (at your 
+option) any later version.</p>
+This program is distributed in the hope that it will be useful, but 
+WITHOUT ANY WARRANTY; without even the implied warranty of 
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
+Public License for more details.
+<hr/>
+
+<!-- =========== START OF FUNCTION SUMMARY =========== -->
+<table class="summary" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="summary">
+  <th colspan="2">Function Summary</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="pyb.tasks.jython-module.html#jythonc" class="summary-sig-name"><code>jythonc</code></a>(<span class=summary-sig-arg>basedir</span>,
+          <span class=summary-sig-arg>modules</span>,
+          <span class=summary-sig-arg>package</span>,
+          <span class=summary-sig-arg>jarfile</span>,
+          <span class=summary-sig-arg>workingdir</span>,
+          <span class=summary-sig-arg>deep</span>,
+          <span class=summary-sig-arg>core</span>,
+          <span class=summary-sig-arg>all</span>,
+          <span class=summary-sig-arg>addpackages</span>,
+          <span class=summary-sig-arg>jythonc</span>,
+          <span class=summary-sig-arg>compiler</span>,
+          <span class=summary-sig-arg>compileropts</span>)</span></code>
+<br />
+Compile python classes into Java class files.</td></tr>
+</table><br />
+
+
+<!-- =========== START OF FUNCTION DETAILS =========== -->
+<table class="details" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="details">
+  <th colspan="2">Function Details</th></tr>
+</table>
+
+<a name="jythonc"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">jythonc</span>(<span class=sig-arg>basedir</span>=<span class=sig-default>''</span>,
+          <span class=sig-arg>modules</span>=<span class=sig-default>[]</span>,
+          <span class=sig-arg>package</span>=<span class=sig-default>None</span>,
+          <span class=sig-arg>jarfile</span>=<span class=sig-default>None</span>,
+          <span class=sig-arg>workingdir</span>=<span class=sig-default>None</span>,
+          <span class=sig-arg>deep</span>=<span class=sig-default>False</span>,
+          <span class=sig-arg>core</span>=<span class=sig-default>False</span>,
+          <span class=sig-arg>all</span>=<span class=sig-default>False</span>,
+          <span class=sig-arg>addpackages</span>=<span class=sig-default>[]</span>,
+          <span class=sig-arg>jythonc</span>=<span class=sig-default>None</span>,
+          <span class=sig-arg>compiler</span>=<span class=sig-default>None</span>,
+          <span class=sig-arg>compileropts</span>=<span class=sig-default>None</span>)</span>
+  </h3>
+  Compile python classes into Java class files.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>basedir</b></code> -
+         The base directory
+      <dd><code><b>modules</b></code> -
+         List of python modules (either .py or modules in path)
+      <dd><code><b>package</b></code> -
+         The package name to use
+      <dd><code><b>jarfile</b></code> -
+         The JAR file to output to
+      <dd><code><b>workingdir</b></code> -
+         Directory where java source code is placed
+      <dd><code><b>deep</b></code> -
+         Compile python dependencies (for applets)
+      <dd><code><b>core</b></code> -
+         Include core Python libraries (130k)
+      <dd><code><b>all</b></code> -
+         Everything in core plus the compiler and parser
+      <dd><code><b>addpackages</b></code> -
+         Include Java dependencies from the given packages
+      <dd><code><b>compiler</b></code> -
+         The path to the compiler to use
+      <dd><code><b>compileropts</b></code> -
+         Options to pass to the compiler
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+<br />
+
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="pyb-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" align="right" width="100%">
+      <table border="0" cellpadding="0" cellspacing="0">
+      <tr><th class="navbar" align="center">
+        <p class="nomargin">
+          <a class="navbar" target="_top" href="http://pyb.sf.net/">Project&nbsp;Homepage</a>
+      </p></th></tr></table>
+    </th>
+  </tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td align="left"><font size="-2">Generated by Epydoc 2.1 on Fri Apr 23 15:39:19 2004</font></td>
+    <td align="right"><a href="http://epydoc.sourceforge.net"
+                      ><font size="-2">http://epydoc.sf.net</font></a></td>
+  </tr>
+</table>
+</body>
+</html>

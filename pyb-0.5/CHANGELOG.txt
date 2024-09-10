@@ -1,0 +1,18 @@
+pyb 0.5 (April 23, 2004)
+
+ - Added prof.py for profiling.
+ - pyb.py body is now in a run() method executed from __main__.
+ - Added parallel flag to Target constructor allowing a target to be run in 
+   its own thread (even though it is still running serially...grr)
+ - Added support for specifying build file on the command line via -f
+ - Added sleep task.
+
+pyb 0.4 (April 9, 2004)
+
+ - Started adding unit tests.
+ - Dependencies are now specified as a list of target names passed to the 
+   Target constructor.
+ - Added -d command line argument to enable debugging.
+ - Added jythonc task.
+ - Added platform-specific path building path to epydocs.
+ - Additional small presentational changes.

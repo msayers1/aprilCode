@@ -1,0 +1,337 @@
+<html>
+<head>
+<title>Pyb User's Guide</title>
+<link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+<body>
+
+<body>
+
+<div id="content">
+
+<div id="header">
+    <div id="title">Pyb User's Guide</div>
+    <div id="subtitle">Version 0.5</div>
+    <div id="note">Work in Progress</div>
+</div>
+
+<div id="body">
+
+<a name="toc"><h2>Table of Contents</h2></a>
+
+<ul>
+<li><a href="#toc">Table of Contents</a></li>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#installing">Installing</a></li>
+<li><a href="#start">Getting Started</a></li>
+<li><a href="#tasks">Tasks</a>
+    <ul>
+    <li><a href="#tasks_core">Core Tasks</a></li>
+    <li><a href="#tasks_java">Java Tasks</a></li>
+    <li><a href="#tasks_python">Python Tasks</a></li>
+    </ul>
+</li>
+<li><a href="#filters">Filters</a></li>
+<li><a href="#examples">Examples</a></li>
+</ul>
+
+<a name="introduction"><h2>Introduction</h2></a>
+
+<p>Pyb is a build tool modeled after ant.  The primary difference is that pyb is written in Python and all build scripts are also written in Python.</p>
+
+<p>Pyb requires version 2.3 of Python.</p>
+
+<p>Pyb is currently released under a <a href="http://www.gnu.org/licenses/gpl.txt">GPL</a> license.</p>
+
+<a name="installing"><h2>Installing</h2></a>
+
+<p>To install just add the Pyb directory to your PATH environment variable.  This will let you execute Pyb just by typing in 'pyb' on the command line.</p>
+
+<a name="start"><h2>Getting Started</h2></a>
+
+<p>The Pyb distribution includes a demo which shows how pyb can be used to build Java project.  The first thing to do is to take a look at the pybuild.py file located in the demo directory.
+
+<a name="tasks"><h2>Tasks</h2></a>
+
+<p>Pyb already contains a variety of useful tasks.</p>
+
+<a name="tasks_core"><h3>Core Tasks</h3></a>
+
+<dl>
+<dt><b>copy</b></dt>
+<dd><p>Copy a file or directory to another directory.</p></dd>
+
+<dt><b>delete</b></dt>
+<dd><p>Delete a file or directory.</p></dd>
+
+<dt><b>fail</b></dt>
+<dd><p>Force a failure of the build script.</p></dd>
+
+<dt><b>tar</b></dt>
+<dd><p>Create a TAR from a directory.</p></dd>
+
+<dt><b>untar</b></dt>
+<dd><p>Extract a TAR into a directory.</p></dd>
+
+<dt><b>gzip</b></dt>
+<dd><p>Create a GZip from a directory.</p></dd>
+
+<dt><b>gunzip</b></dt>
+<dd><p>Extract a GZip into a directory.</p></dd>
+
+<dt><b>zip</b></dt>
+<dd><p>Create a Zip from a directory.</p></dd>
+
+<dt><b>unzip</b></dt>
+<dd><p>Extract a Zip into a directory.</p></dd>
+
+<dt><b>bzip2</b></dt>
+<dd><p>Create a BZip2 from a directory.</p></dd>
+
+<dt><b>bunzip2</b></dt>
+<dd><p>Extract a BZip2 into a directory.</p></dd>
+</dl>
+
+<a name="tasks_java"><h3>Java Tasks</h3></a>
+
+<dl>
+<dt><b>java</b></dt>
+<dd><p>Execute a Java class file.</p></dd>
+
+<dt><b>javac</b></dt>
+<dd><p>Compile all java files in the specified base directory.</p></dd>
+
+<dt><b>javadoc</b></dt>
+<dd><p>Generate javadoc documentation.</p></dd>
+
+<dt><b>jar</b></dt>
+<dd><p>Generate JAR archives.</p></dd>
+
+<dt><b>unjar</b></dt>
+<dd><p>Extract JAR archives.</p></dd>
+
+<dt><b>war</b></dt>
+<dd><p>Generate WAR archivces.</p></dd>
+
+<dt><b>unwar</b></dt>
+<dd><p>Extract WAR archives.</p></dd>
+
+<dt><b>ear</b></dt>
+<dd><p>Generate EAR archivces.</p></dd>
+</dl>
+
+<a name="tasks_python"><h3>Python Tasks</h3></a>
+
+<dl>
+<dt><b>epydoc</b></dt>
+<dd><p>Generate documentation using Epydoc (http://epydoc.sf.net/).</p></dd>
+
+<dt><b>python</b></dt>
+<dd><p>Execute a python script.</p></dd>
+
+<dt><b>setup</b></dt>
+<dd><p>Execute distutils.setup with the specified setup file.</p></dd>
+</dl>
+
+<a name="filters"><h2>Filters</h2></a>
+
+<p>Many of the tasks in pyb accept and includeFilters and excludeFilters arguments parameters.  The parameters are used to filter file lists using regular expressions.  First file lists are passed through the include filters.  The result list is then passed through the exclude filters.</p>
+
+<p>There are numerous canned filters in the pyb.filters module.  These are standard filters which you can use just by including the variable name in the appropriate filter list.</p>
+
+<a name="example"><h2>Example</h2></a>
+
+<p>The following example <code>build.py</code> file is taken directly from the demo which is included with the pyb distribution.</p>
+
+<pre>""" Demo build script. """
+
+from pyb import filters
+from pyb import tasks
+from pyb.tasks import java
+from pyb.tasks import py
+from pyb.core import *
+
+# variables
+src = 'src'
+www = 'www'
+webxml = 'etc/web.xml'
+builddir = 'build'
+distdir = 'dist'
+tempdir = 'temp'
+classes = 'build/classes'
+docs = 'build/docs'
+jarfile = 'build/test.jar'
+warfile = 'build/test.war'
+zipfile = 'dist/test.zip'
+srczipfile = 'dist/test.src.zip'
+tarfile = 'dist/test.tar'
+srctarfile = 'dist/test.src.tar'
+gzipfile = 'dist/test.tar.gz'
+bzip2file = 'dist/test.tar.bz2'
+srcgzip = 'dist/test.src.gz'
+
+# targets
+def build():
+    tasks.java.javac(destdir=classes, basedir=src)
+
+def javadoc():
+    tasks.java.javadoc(destdir=docs)
+
+def jar():
+    tasks.java.jar(basedir=classes, destfile=jarfile)
+    
+def war():
+    tasks.java.war(basedir=www, destfile=warfile, webxml=webxml)
+    
+def dist():
+    build()
+    jar()
+    war()
+    javadoc()
+    
+    # zip the source
+    tasks.zip(basedir=src, destfile=srczipfile, includeFilters=[filters.java])
+    
+    # zip the binaries
+    tasks.zip(basedir=builddir, destfile=zipfile, includeFilters=[filters.jars])
+    tasks.tar(basedir=builddir, destfile=tarfile, includeFilters=[filters.jars])
+    tasks.gzip(tarfile, gzipfile)
+    tasks.bzip2(tarfile, bzip2file)
+    tasks.gunzip(gzipfile, destdir=tempdir)
+    tasks.bunzip2(bzip2file, destdir=tempdir)
+    tasks.unzip(zipfile, destdir=tempdir + '/zip')
+    tasks.untar(tarfile, destdir=tempdir + '/tar')
+    
+def clean():
+    tasks.delete(dir=builddir)
+    tasks.delete(dir=distdir)
+    tasks.delete(dir=tempdir)
+    
+def failtest():
+    tasks.fail('Something went wrong')
+    
+def test():
+    tasks.copy(basedir='', destdir='copy')
+    tasks.py.python(script='test.py')
+
+targets={
+    'build':Target(build),
+    'javadoc':Target(javadoc),
+    'jar':Target(jar),
+    'war':Target(war),
+    'dist':Target(dist),
+    'clean':Target(clean),
+    'failtest':Target(failtest),
+    'test':Target(test)
+}
+
+Project(name='Demo Project', default='build', targets=targets)
+</pre>
+
+<p>The build script above can be broken down into several distinct sections.  The first section imports modules which are used in the script.  The filters modules contains <a href="#filters">pre-defined file filters</a> as described in the Filters section of this guide.  The tasks package contains core and language-specific tasks.  The pyb.core module contains core classes such as Project and Task.</p>
+
+<pre>from pyb import filters
+from pyb import tasks
+from pyb.tasks import java
+from pyb.tasks import py
+from pyb.core import *
+</pre>
+
+<p>The next section of the build script contains any variables used globally throughout the build script.</p>
+
+<pre># variables
+src = 'src'
+www = 'www'
+webxml = 'etc/web.xml'
+builddir = 'build'
+distdir = 'dist'
+tempdir = 'temp'
+classes = 'build/classes'
+docs = 'build/docs'
+jarfile = 'build/test.jar'
+warfile = 'build/test.war'
+zipfile = 'dist/test.zip'
+srczipfile = 'dist/test.src.zip'
+tarfile = 'dist/test.tar'
+srctarfile = 'dist/test.src.tar'
+gzipfile = 'dist/test.tar.gz'
+bzip2file = 'dist/test.tar.bz2'
+srcgzip = 'dist/test.src.gz'
+</pre>
+
+<p>Next are all of the targets, defined as python functions.  Targets can call other targets directly and can invoke tasks.  Since the build script is python you can also have any other type of python construct, such as loops, if structurs, and so on.</p>
+
+<pre>
+# targets
+def build():
+    tasks.java.javac(destdir=classes, basedir=src)
+
+def javadoc():
+    tasks.java.javadoc(destdir=docs)
+
+def jar():
+    tasks.java.jar(basedir=classes, destfile=jarfile)
+    
+def war():
+    tasks.java.war(basedir=www, destfile=warfile, webxml=webxml)
+    
+def dist():
+    build()
+    jar()
+    war()
+    javadoc()
+    
+    # zip the source
+    tasks.zip(basedir=src, destfile=srczipfile, includeFilters=[filters.java])
+    
+    # zip the binaries
+    tasks.zip(basedir=builddir, destfile=zipfile, includeFilters=[filters.jars])
+    tasks.tar(basedir=builddir, destfile=tarfile, includeFilters=[filters.jars])
+    tasks.gzip(tarfile, gzipfile)
+    tasks.bzip2(tarfile, bzip2file)
+    tasks.gunzip(gzipfile, destdir=tempdir)
+    tasks.bunzip2(bzip2file, destdir=tempdir)
+    tasks.unzip(zipfile, destdir=tempdir + '/zip')
+    tasks.untar(tarfile, destdir=tempdir + '/tar')
+    
+def clean():
+    tasks.delete(dir=builddir)
+    tasks.delete(dir=distdir)
+    tasks.delete(dir=tempdir)
+    
+def failtest():
+    tasks.fail('Something went wrong')
+    
+def test():
+    tasks.copy(basedir='', destdir='copy')
+    tasks.py.python(script='test.py')
+</pre>
+
+<p>The next section creates a map of target objects which are mapped to a name and which wrap the previously defined target functions.  You must create a Target object for each of your target methods and include it in this targets map.</p>
+
+<pre>targets={
+    'build':Target(build),
+    'javadoc':Target(javadoc),
+    'jar':Target(jar),
+    'war':Target(war),
+    'dist':Target(dist),
+    'clean':Target(clean),
+    'failtest':Target(failtest),
+    'test':Target(test)
+}
+</pre>
+
+<p>Finally the Project is constructed and executed.  The project is executed immediately upon construction.  If no targets are specified via the command line when the build script is executed then the target specified in the default parameter is executed.</p>
+
+<pre>Project(name='Demo Project', default='build', targets=targets)</pre>
+
+<p>Keep in mind that the above form is a simple example and represents the base-level functionality possible in a build script.  As previously mentioned because a build script is a Python script you have full access to all of the features of Python.</p>
+
+</div>
+<div id="footer">
+Copyright 2004, Aetrion LLC.  All Rights Reserved.
+</div>
+</div>
+
+</body>
+</html>

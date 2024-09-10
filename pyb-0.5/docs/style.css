@@ -1,0 +1,32 @@
+body {
+    background-color: #99c;
+    font-family: Verdana, Helvetica, sans-serif;
+}
+#content {
+    background-color: #fff;
+    margin-left: 2em;
+    margin-right: 2em;
+    margin-top: 10px;
+    border: 1px solid #000;
+}
+#header {
+    background-color: #ddd;
+    padding: 10px;
+    border-bottom: 1px dashed #446;
+}
+#body {
+    padding: 20px;
+}
+#footer {
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    font-size: 10pt;
+}
+#title {
+    font-size: 24px;
+    font-weight: bold;
+}
+#sflogo {
+    float:right;
+}
