@@ -5,6 +5,16 @@ import time
 import numpy as np
 
 
+at_detector = Detector(
+    families="tag36h11",
+    nthreads=1,
+    quad_decimate=1,
+    quad_sigma=0,
+    refine_edges=1,
+    decode_sharpening=0.25,
+    debug=0
+)
+
 fx = 0
 cx = 0
 fy = 0
@@ -21,19 +31,7 @@ k3 = 0
 camera_matrix = np.array([[fx, 0, cx], [0, fy, cy], [0, 0, 1]])
 dist_coeffs = np.array([k1, k2, p1, p2, k3])
 
-# For stereo vision, you would also need the stereo camera parameters
-
-
-at_detector = Detector(
-    families="tag36h11",
-    nthreads=1,
-    quad_decimate=1,
-    quad_sigma=0,
-    refine_edges=1,
-    decode_sharpening=0.25,
-    debug=0
-)
-class CameraStream:
+class StationaryCameraStream:
     def __init__(self, camera_index=0):
         # Initialize the camera capture object
         self.cap = cv2.VideoCapture(camera_index)
@@ -83,45 +81,6 @@ class CameraStream:
         print("Camera matrix:\n", camera_matrix)
         print("Distortion coefficients:\n", dist_coeffs)
 
-    def convert2d_to_3d(self, image_points):
-        # Define fixed 2D image points use below as sample input. 
-        # image_points = np.array([
-        #     [x1, y1],
-        #     [x2, y2],
-        #     # Add more points as needed
-        # ], dtype='float32')
-
-        # Define corresponding 3D world points
-        object_points = np.array([
-            [0, 0, 0],
-            [1, 0, 0],
-            [1, 1, 0],
-            [0, 1, 0],
-            # Add more points as needed
-        ], dtype='float32')
-
-        # Load the camera matrix and distortion coefficients from calibration
-        #camera_matrix = np.array([[fx, 0, cx], [0, fy, cy], [0, 0, 1]], dtype='float32')
-        #dist_coeffs = np.array([k1, k2, p1, p2, k3], dtype='float32')
-
-        # Estimate the pose of the object
-        success, rotation_vector, translation_vector = cv2.solvePnP(object_points, image_points, camera_matrix, dist_coeffs)
-
-        # Create a 3D grid
-        grid_size = 10  # Size of the grid
-        grid_points = []
-        for x in range(grid_size):
-            for y in range(grid_size):
-                grid_points.append([x * 0.1, y * 0.1, 0])  # Adjust step size based on your needs
-        grid_points = np.array(grid_points, dtype='float32')
-
-        # Project the 3D grid points to 2D image plane
-        image_points_reprojected, _ = cv2.projectPoints(grid_points, rotation_vector, translation_vector, camera_matrix, dist_coeffs)
-
-        # Print the projected 2D points
-        print("Projected 2D points:\n", image_points_reprojected)
-
-
     def start_stream(self):
         print("Starting camera stream...")
         # Continuously read frames from the camera and display them
@@ -158,9 +117,48 @@ class CameraStream:
             # cv2.imshow("GrayScale", gray)
 
             # Detect AprilTags in the image
+            # results, t_vec, r_vec = at_detector.detect(gray, True)
             results = at_detector.detect(gray)
             # Loop over the AprilTag detection results
             for r in results:
+                # Use solvePnP to estimate pose
+                tag_size = 0.05  # Tag size in meters
+                obj_points = np.array([
+                    [-tag_size / 2, -tag_size / 2, 0],
+                    [ tag_size / 2, -tag_size / 2, 0],
+                    [ tag_size / 2,  tag_size / 2, 0],
+                    [-tag_size / 2,  tag_size / 2, 0]
+                ], dtype=np.float32)
+
+                # Corners of the tag in the image
+                img_points = np.array(r.corners, dtype=np.float32)
+
+                # Estimate pose using solvePnP
+                ret, rvec, tvec = cv2.solvePnP(obj_points, img_points, self.camera_matrix, self.dist_coeffs)
+
+                if ret:
+                    print(f"Rotation Vector (rvec): {rvec.ravel()}")
+                    print(f"Translation Vector (tvec): {tvec.ravel()}")
+
+                    # tvec contains the translation vector (x, y, z)
+                    # The distance from the camera to the tag is the magnitude of the translation vector
+                    distance = np.linalg.norm(tvec)
+                    print(f"Estimated distance to the AprilTag: {distance:.2f} meters")
+
+                    # Translation vector directly gives you the position of the tag in the camera's coordinate system
+                    x = tvec[0]  # X-coordinate (horizontal position relative to camera)
+                    y = tvec[1]  # Y-coordinate (vertical position relative to camera)
+                    z = tvec[2]  # Z-coordinate (depth from the camera)
+
+                    print(f"Position of the tag relative to the camera: X = {x}, Y = {y}, Z = {z}")
+
+                # Convert rvec to a rotation matrix
+                rotation_matrix, _ = cv2.Rodrigues(rvec)
+
+                # Print the rotation matrix
+                print("Rotation matrix:")
+                print(rotation_matrix)
+
                 # Extract the bounding box (the four corners of the tag) for the AprilTag
                 (ptA, ptB, ptC, ptD) = r.corners
                 ptA = (int(ptA[0]), int(ptA[1]))
@@ -188,12 +186,6 @@ class CameraStream:
                     'y': cY,
                     'time': time.time()
                 }
-                if(tagID == 73):
-                    stopPin.high()
-                    pyb.LED.on(blue)
-                if(tagID == 72):
-                    stopPin.low()
-                    pyb.LED.off(blue)
                 self.aprilTags[aprilTag['time']] = aprilTag
             # Display the resulting frame
             cv2.imshow("AprilTag Detection", frame)
