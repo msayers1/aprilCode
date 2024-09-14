@@ -1,10 +1,18 @@
-import cv2
+from cv2 import VideoCapture, 
 import json
 from pupil_apriltags import Detector
 import time
+import math
+# import pyb
 import numpy as np
+# xStopPin = pyb.Pin("P0", pyb.Pin.OUT_PP)
+# yStopPin = pyb.Pin("P1", pyb.Pin.OUT_PP)
+# blue = pyb.LED(3)
 
-
+# Conversion from pixel to cm 
+cm2px = 30
+tolerance = 30 # 30 px, 1cm
+# 300 X 
 at_detector = Detector(
     families="tag36h11",
     nthreads=1,
@@ -14,6 +22,26 @@ at_detector = Detector(
     decode_sharpening=0.25,
     debug=0
 )
+gridByRow = [
+    [18, 12, 6, 0],
+    [19, 13, 7, 1],
+    [20, 14, 8, 2],
+    [21, 15, 9, 3],
+    [22, 16, 10, 4],
+    [23, 17, 11, 5]
+]
+
+xStop = [0, 1,2,3,4,5]
+
+gridByColumn = [
+    [23, 22, 21, 20, 19, 18],
+    [17, 16, 15, 14, 13, 12],
+    [11, 10, 9, 8, 7, 6],
+    [5,4,3,2,1,0]
+    ]
+
+yStop = [18,12,6,0]
+
 
 fx = 0
 cx = 0
@@ -24,79 +52,47 @@ k2 = 0
 p1 = 0
 p2 = 0
 k3 = 0
-
+xMax = 640
+yMax = 480
+xMin = 0
+yMin = 0
+centerX = int(xMin + (xMax - xMin)/2)
+centerY = int(yMin + (yMax - yMin)/2)
 
 # Load the calibration parameters
 # These would normally be obtained from a calibration process
 camera_matrix = np.array([[fx, 0, cx], [0, fy, cy], [0, 0, 1]])
 dist_coeffs = np.array([k1, k2, p1, p2, k3])
 
-class StationaryCameraStream:
+class CameraStream:
     def __init__(self, camera_index=0):
         # Initialize the camera capture object
         self.cap = cv2.VideoCapture(camera_index)
         self.aprilTags = {}
+        self.xStop = []
+        self.yStop = []
         self.camera_matrix = camera_matrix
         self.dist_coeffs = dist_coeffs
         if not self.cap.isOpened():
             print(f"Error: Unable to open camera {camera_index}")
             raise Exception("Camera not accessible")
 
-    def calibrate(self):
-        # Define the chessboard dimensions
-        chessboard_size = (9, 6)  # Number of inner corners in row and column
-        square_size = 0.025  # Size of each square in meters (adjust based on your chessboard)
-
-        # Prepare object points (0,0,0), (1,0,0), (2,0,0), ..., (8,5,0)
-        objp = np.zeros((chessboard_size[0] * chessboard_size[1], 3), np.float32)
-        objp[:, :2] = np.mgrid[0:chessboard_size[0], 0:chessboard_size[1]].T.reshape(-1, 2) * square_size
-
-        # Prepare arrays to store object points and image points
-        objpoints = []
-        imgpoints = []
-
-        # Load the image
-        image_path = 'chessboard_image.jpg'  # Path to your chessboard image
-        img = cv2.imread(image_path)
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-        # Find the chessboard corners
-        ret, corners = cv2.findChessboardCorners(gray, chessboard_size, None)
-        if ret:
-            objpoints.append(objp)
-            imgpoints.append(corners)
-            
-            # Draw and display the corners
-            img = cv2.drawChessboardCorners(img, chessboard_size, corners, ret)
-            cv2.imshow('Chessboard', img)
-            cv2.waitKey(500)
-            cv2.destroyAllWindows()
-        else:
-            print("Chessboard corners not found!")
-
-        # Calibrate the camera
-        ret, camera_matrix, dist_coeffs, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
-
-        # Print camera matrix and distortion coefficients
-        print("Camera matrix:\n", camera_matrix)
-        print("Distortion coefficients:\n", dist_coeffs)
-
     def start_stream(self):
         print("Starting camera stream...")
         # Continuously read frames from the camera and display them
         # while True:
         self.apriltagDetect()
-            # ret, frame = self.cap.read()  # Capture frame-by-frame
-            # print(frame)
-            # if not ret:
-            #     print("Error: Unable to read from camera")
-            #     break
+        # ret, frame = self.cap.read()  # Capture frame-by-frame
+        # print(frame)
+        # if not ret:
+        #     print("Error: Unable to read from camera")
+        #     break
 
-            #cv2.imshow('Camera Stream', frame)  # Display the resulting frame
+        #cv2.imshow('Camera Stream', frame)  # Display the resulting frame
 
-            # Break the loop if 'q' is pressed
-            # if cv2.waitKey(1) & 0xFF == ord('q'):
-            #     break
+        # # Break the loop if 'q' is pressed
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     break
 
     def stop_stream(self):
         # Release the camera and close the windows
@@ -106,8 +102,47 @@ class StationaryCameraStream:
 
     def apriltagDetect(self):
         while True:
+
+
+            
             # Capture frame-by-frame
             ret, frame = self.cap.read()
+
+            # Draw the corner boxes & center box            
+            cv2.line(frame, (xMin + 30, yMin + 30), (xMin + 30,yMin), (0, 255, 255), 2)
+            cv2.line(frame, (xMin + 30, yMin), (xMin,yMin), (0, 255, 255), 2)
+            cv2.line(frame, (xMin, yMin), (xMin,yMin+30), (0, 255, 255), 2)
+            cv2.line(frame, (xMin, yMin+30), (xMin+30,yMin+30), (0, 255, 255), 2)
+            
+            cv2.line(frame, (xMax, yMin), (xMax,yMin+30), (0, 255, 255), 2)
+            cv2.line(frame, (xMax, yMin+30), (xMax-30,yMin+30), (0, 255, 255), 2)
+            cv2.line(frame, (xMax-30, yMin+30), (xMax-30,yMin), (0, 255, 255), 2)
+            cv2.line(frame, (xMax-30, yMin), (xMax,yMin), (0, 255, 255), 2)
+
+
+            cv2.line(frame, (xMax - 30, yMax - 30), (xMax - 30,yMax), (0, 255, 255), 2)
+            cv2.line(frame, (xMax - 30, yMax), (xMax,yMax), (0, 255, 255), 2)
+            cv2.line(frame, (xMax, yMax), (xMax,yMax-30), (0, 255, 255), 2)
+            cv2.line(frame, (xMax, yMax-30), (xMax-30,yMax-30), (0, 255, 255), 2)
+            
+            cv2.line(frame, (xMin, yMax), (xMin,yMax-30), (0, 255, 255), 2)
+            cv2.line(frame, (xMin, yMax-30), (xMin+30,yMax-30), (0, 255, 255), 2)
+            cv2.line(frame, (xMin+30, yMax-30), (xMin+30,yMax), (0, 255, 255), 2)
+            cv2.line(frame, (xMin+30, yMax), (xMin,yMax), (0, 255, 255), 2)
+
+
+            cv2.line(frame, (xMin, yMax), (xMin,yMax-30), (0, 255, 255), 2)
+            cv2.line(frame, (xMin, yMax-30), (xMin+30,yMax-30), (0, 255, 255), 2)
+            cv2.line(frame, (xMin+30, yMax-30), (xMin+30,yMax), (0, 255, 255), 2)
+            cv2.line(frame, (xMin+30, yMax), (xMin,yMax), (0, 255, 255), 2)
+
+            cv2.line(frame, (centerX-15, centerY-15), (centerX-15,centerY+15), (0, 255, 0), 2)
+            cv2.line(frame, (centerX-15, centerY+15), (centerX+15,centerY+15), (0, 255, 0), 2)
+            cv2.line(frame, (centerX+15, centerY+15), (centerX+15,centerY-15), (0, 255, 0), 2)
+            cv2.line(frame, (centerX+15, centerY-15), (centerX-15,centerY-15), (0, 255, 0), 2)
+
+
+            
             if not ret:
                 break
 
@@ -121,43 +156,6 @@ class StationaryCameraStream:
             results = at_detector.detect(gray)
             # Loop over the AprilTag detection results
             for r in results:
-                # Use solvePnP to estimate pose
-                tag_size = 0.05  # Tag size in meters
-                obj_points = np.array([
-                    [-tag_size / 2, -tag_size / 2, 0],
-                    [ tag_size / 2, -tag_size / 2, 0],
-                    [ tag_size / 2,  tag_size / 2, 0],
-                    [-tag_size / 2,  tag_size / 2, 0]
-                ], dtype=np.float32)
-
-                # Corners of the tag in the image
-                img_points = np.array(r.corners, dtype=np.float32)
-
-                # Estimate pose using solvePnP
-                ret, rvec, tvec = cv2.solvePnP(obj_points, img_points, self.camera_matrix, self.dist_coeffs)
-
-                if ret:
-                    print(f"Rotation Vector (rvec): {rvec.ravel()}")
-                    print(f"Translation Vector (tvec): {tvec.ravel()}")
-
-                    # tvec contains the translation vector (x, y, z)
-                    # The distance from the camera to the tag is the magnitude of the translation vector
-                    distance = np.linalg.norm(tvec)
-                    print(f"Estimated distance to the AprilTag: {distance:.2f} meters")
-
-                    # Translation vector directly gives you the position of the tag in the camera's coordinate system
-                    x = tvec[0]  # X-coordinate (horizontal position relative to camera)
-                    y = tvec[1]  # Y-coordinate (vertical position relative to camera)
-                    z = tvec[2]  # Z-coordinate (depth from the camera)
-
-                    print(f"Position of the tag relative to the camera: X = {x}, Y = {y}, Z = {z}")
-
-                # Convert rvec to a rotation matrix
-                rotation_matrix, _ = cv2.Rodrigues(rvec)
-
-                # Print the rotation matrix
-                print("Rotation matrix:")
-                print(rotation_matrix)
 
                 # Extract the bounding box (the four corners of the tag) for the AprilTag
                 (ptA, ptB, ptC, ptD) = r.corners
@@ -178,6 +176,12 @@ class StationaryCameraStream:
 
                 # Print the tag family and ID
                 tagID = r.tag_id
+                xStopID = self.findStop(tagID, gridByRow, xStop)
+                if xStopID not in self.xStop:
+                    self.xStop.append(xStopID)
+                yStopID = self.findStop(tagID, gridByColumn, yStop)
+                if yStopID not in self.yStop:
+                    self.yStop.append(yStopID)
                 cv2.putText(frame, f"Tag ID: {tagID}", (ptA[0], ptA[1] - 15),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                 aprilTag = {
@@ -186,15 +190,53 @@ class StationaryCameraStream:
                     'y': cY,
                     'time': time.time()
                 }
-                self.aprilTags[aprilTag['time']] = aprilTag
+                # print(centerX)
+                # print(centerY)
+                # print(cX)
+                # print(centerX -15)
+                # print(centerX - 15 < cX)
+                # print((centerX - 15 < cX and cX < centerX + 15))
+                if tagID in self.xStop:
+                    # xStopPin.high()
+                    # pyb.LED.on(blue)
+                    print("X stop")
+                if tagID in self.yStop:
+                    print("Y stop")
+                    # yStopPin.high()
+                    # pyb.LED.off(blue)
+                # if((centerX - 15 < cX and cX < centerX + 15) and (centerY - 15 < cY and cY < centerY + 15)):
+                #     print("All Stop !")
+                #     print(cX)
+                #     print(cY)
+                # else:
+                #     if(centerX - 15 < cX and cX < centerX + 15):
+                #         print("Stop X!")
+                #         print(cX)
+                #     if(centerY - 15 < cY and cY < centerY + 15):
+                #         print("Stop Y!")
+                #         print(cY)
+                # if(tagID == 73):
+                #     stopPin.high()
+                #     pyb.LED.on(blue)
+                # if(tagID == 72):
+                #     stopPin.low()
+                #     pyb.LED.off(blue)
+                #pself.aprilTags[aprilTag['time']] = aprilTag
+                break
             # Display the resulting frame
             cv2.imshow("AprilTag Detection", frame)
-
             # Exit the loop when 'q' is pressed
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-
-
+    #Function to add the Stop to the Stop list. 
+    def findStop(self, tagID, gridList, stopList):
+        for i, sublist in enumerate(gridList):
+            if tagID in sublist:
+                print(f"Found {tagID} in stop is {stopList[i]}")
+                # Use the index `i` to get a value from another list
+                result = stopList[i]
+                return result
+        return None  # Return None if the target is not found in any sublist
 
 
 # Example usage:

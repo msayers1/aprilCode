@@ -7,7 +7,10 @@ import numpy as np
 stopPin = pyb.Pin("P0", pyb.Pin.OUT_PP)
 blue = pyb.LED(3)
 
-
+# Conversion from pixel to cm 
+cm2px = 30
+tolerance = 30 # 30 px, 1cm
+# 300 X 
 at_detector = Detector(
     families="tag36h11",
     nthreads=1,
@@ -50,17 +53,17 @@ class CameraStream:
         # Continuously read frames from the camera and display them
         # while True:
         self.apriltagDetect()
-            # ret, frame = self.cap.read()  # Capture frame-by-frame
-            # print(frame)
-            # if not ret:
-            #     print("Error: Unable to read from camera")
-            #     break
+        # ret, frame = self.cap.read()  # Capture frame-by-frame
+        # print(frame)
+        # if not ret:
+        #     print("Error: Unable to read from camera")
+        #     break
 
-            #cv2.imshow('Camera Stream', frame)  # Display the resulting frame
+        #cv2.imshow('Camera Stream', frame)  # Display the resulting frame
 
-            # Break the loop if 'q' is pressed
-            # if cv2.waitKey(1) & 0xFF == ord('q'):
-            #     break
+        # # Break the loop if 'q' is pressed
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     break
 
     def stop_stream(self):
         # Release the camera and close the windows
@@ -85,44 +88,6 @@ class CameraStream:
             results = at_detector.detect(gray)
             # Loop over the AprilTag detection results
             for r in results:
-                # Use solvePnP to estimate pose
-                tag_size = 0.05  # Tag size in meters
-                obj_points = np.array([
-                    [-tag_size / 2, -tag_size / 2, 0],
-                    [ tag_size / 2, -tag_size / 2, 0],
-                    [ tag_size / 2,  tag_size / 2, 0],
-                    [-tag_size / 2,  tag_size / 2, 0]
-                ], dtype=np.float32)
-
-                # Corners of the tag in the image
-                img_points = np.array(r.corners, dtype=np.float32)
-
-                # Estimate pose using solvePnP
-                ret, rvec, tvec = cv2.solvePnP(obj_points, img_points, self.camera_matrix, self.dist_coeffs)
-
-                if ret:
-                    print(f"Rotation Vector (rvec): {rvec.ravel()}")
-                    print(f"Translation Vector (tvec): {tvec.ravel()}")
-
-                    # tvec contains the translation vector (x, y, z)
-                    # The distance from the camera to the tag is the magnitude of the translation vector
-                    distance = np.linalg.norm(tvec)
-                    print(f"Estimated distance to the AprilTag: {distance:.2f} meters")
-
-                    # Translation vector directly gives you the position of the tag in the camera's coordinate system
-                    x = tvec[0]  # X-coordinate (horizontal position relative to camera)
-                    y = tvec[1]  # Y-coordinate (vertical position relative to camera)
-                    z = tvec[2]  # Z-coordinate (depth from the camera)
-
-                    print(f"Position of the tag relative to the camera: X = {x}, Y = {y}, Z = {z}")
-
-                # Convert rvec to a rotation matrix
-                rotation_matrix, _ = cv2.Rodrigues(rvec)
-
-                # Print the rotation matrix
-                print("Rotation matrix:")
-                print(rotation_matrix)
-
                 # Extract the bounding box (the four corners of the tag) for the AprilTag
                 (ptA, ptB, ptC, ptD) = r.corners
                 ptA = (int(ptA[0]), int(ptA[1]))
@@ -150,6 +115,7 @@ class CameraStream:
                     'y': cY,
                     'time': time.time()
                 }
+                print(r)
                 if(tagID == 73):
                     stopPin.high()
                     pyb.LED.on(blue)
